@@ -1,6 +1,6 @@
 # Ex.No: 2 Implementation of Stack Plate game using Queue 
-### DATE:                                                                            
-### REGISTER NUMBER : 212221240056
+### DATE: 14/08/2024                                                                       
+### REGISTER NUMBER : 212221240026.
 ### AIM: 
 To write a python program to simulate the process of stacking plates.
 ### Algorithm:
@@ -11,77 +11,138 @@ To write a python program to simulate the process of stacking plates.
 5. Display the plate details.
 6. Create an interactive menu and display it.
 ### Program:
+```
+import pygame
+import sys
 
+# Initialize Pygame
+pygame.init()
 
+# Constants
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+BACKGROUND_COLOR = (30, 30, 30)
+PLATE_COLOR = (255, 100, 100)
+STACK_COLOR = (100, 255, 100)
+TEXT_COLOR = (255, 255, 255)
+PLATE_WIDTH = 60
+PLATE_HEIGHT = 20
+STACK_SPACING = 150
+PLATE_SPACING = 5
+FONT_SIZE = 24
+FPS = 60
 
+# Setup the screen
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Stack of Plates")
+clock = pygame.time.Clock()
 
+# Font
+font = pygame.font.Font(None, FONT_SIZE)
 
-
-
-
-
-~~~
-class PlateStack:
-    def __init__(self):
+class Stack:
+    def __init__(self, capacity, position):
+        self.capacity = capacity
         self.stack = []
+        self.position = position  # (x, y) position of the stack
+
+    def is_full(self):
+        return len(self.stack) >= self.capacity
 
     def is_empty(self):
         return len(self.stack) == 0
 
-    def push(self, plate):
-        self.stack.append(plate)
-        print(f"Plate '{plate}' added to the stack.")
+    def push(self, item):
+        if not self.is_full():
+            self.stack.append(item)
+        else:
+            raise Exception("Stack is full")
 
     def pop(self):
-        if self.is_empty():
-            print("The stack is empty. No plates to remove.")
+        if not self.is_empty():
+            return self.stack.pop()
         else:
-            removed_plate = self.stack.pop()
-            print(f"Plate '{removed_plate}' removed from the stack.")
+            raise Exception("Stack is empty")
 
-    def view_stack(self):
-        if self.is_empty():
-            print("The stack is empty.")
+    def draw(self):
+        x, y = self.position
+        for i, plate in enumerate(self.stack):
+            pygame.draw.rect(screen, PLATE_COLOR, (x, y - i * (PLATE_HEIGHT + PLATE_SPACING), PLATE_WIDTH, PLATE_HEIGHT))
+            plate_text = font.render(str(plate), True, TEXT_COLOR)
+            screen.blit(plate_text, (x + PLATE_WIDTH // 2 - plate_text.get_width() // 2, 
+                                     y - i * (PLATE_HEIGHT + PLATE_SPACING) + PLATE_HEIGHT // 2 - plate_text.get_height() // 2))
+
+
+class SetOfStacks:
+    def __init__(self, capacity, max_stacks):
+        self.capacity = capacity
+        self.max_stacks = max_stacks
+        self.stacks = []
+
+    def get_last_stack(self):
+        if not self.stacks:
+            return None
+        return self.stacks[-1]
+
+    def push(self, item):
+        last_stack = self.get_last_stack()
+        if last_stack and not last_stack.is_full():
+            last_stack.push(item)
         else:
-            print("Current stack of plates:")
-            for plate in reversed(self.stack):
-                print(plate)
+            if len(self.stacks) < self.max_stacks:
+                new_stack_position = (len(self.stacks) * STACK_SPACING + 100, SCREEN_HEIGHT - 100)
+                new_stack = Stack(self.capacity, new_stack_position)
+                new_stack.push(item)
+                self.stacks.append(new_stack)
+            else:
+                print("No more stacks can be added!")
 
-def plate_stack_game():
-    plate_stack = PlateStack()
-    print("Welcome to the Plate Stack Game!")
+    def pop(self):
+        last_stack = self.get_last_stack()
+        if not last_stack:
+            raise Exception("No stacks available")
+        item = last_stack.pop()
+        if last_stack.is_empty():
+            self.stacks.pop()
+        return item
 
-    while True:
-        print("\nChoose an option:")
-        print("1. Add a plate")
-        print("2. Remove a plate")
-        print("3. View stack")
-        print("4. Exit")
+    def draw(self):
+        for stack in self.stacks:
+            stack.draw()
 
-        choice = input("Enter your choice: ")
 
-        if choice == '1':
-            plate = input("Enter the name of the plate to add: ")
-            plate_stack.push(plate)
-        elif choice == '2':
-            plate_stack.pop()
-        elif choice == '3':
-            plate_stack.view_stack()
-        elif choice == '4':
-            print("Exiting the game. Goodbye!")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+# Example usage in Pygame
+set_of_stacks = SetOfStacks(capacity=5, max_stacks=5)
 
-if __name__ == "__main__":
-    plate_stack_game()
+# Simulate pushing plates onto stacks
+for i in range(15):
+    set_of_stacks.push(i)
 
-~~~
+# Main Game Loop
+running = True
+while running:
+    screen.fill(BACKGROUND_COLOR)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:  # Press 'P' to push a new plate
+                set_of_stacks.push(len(set_of_stacks.stacks) * 5)
+            elif event.key == pygame.K_o:  # Press 'O' to pop the top plate
+                if set_of_stacks.stacks:
+                    set_of_stacks.pop()
+
+    # Draw the stacks and plates
+    set_of_stacks.draw()
+
+    pygame.display.flip()
+    clock.tick(FPS)
+
+pygame.quit()
+sys.exit()
+
+```
 ### Output:
-
-<img width="1128" alt="image" src="https://github.com/user-attachments/assets/e0d006ef-e8e7-448d-85e6-c9a02da851ba">
-
-
+![Screenshot 2024-10-18 213556](https://github.com/user-attachments/assets/b1d874ae-700c-4063-8d9c-6e95732c245d)
 ### Result:
 Thus the simple Stack plate game was implemented using data structure Stack.
